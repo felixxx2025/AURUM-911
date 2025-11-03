@@ -1,0 +1,11 @@
+{
+  "tenant_id": "00000000-0000-0000-0000-000000000000",
+  "employee": {
+    "cpf": "11122233344",
+    "name": "Fulano",
+    "salary": 4200.0,
+    "company_cnpj": "00011122233344"
+  },
+  "requested_amount": 1000.0,
+  "term": 12
+}

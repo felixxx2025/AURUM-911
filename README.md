@@ -1,13 +1,44 @@
-# Novo Repositório
+# AURUM-911 — Monorepo
 
-Este é o commit inicial do repositório.
+Plataforma SaaS multi-tenant white-label. Este repositório traz documentação completa e um serviço inicial (HR+ API) para acelerar o desenvolvimento.
 
-## Como começar
+## Estrutura
 
-- Adicione seu código na pasta raiz ou crie uma estrutura de diretórios.
-- Atualize este README com informações do projeto.
+- `docs/` — visão geral, HR+, integrações, dashboards, RBAC, observability, runbooks, modelos SQL
+- `openapi/` — especificação OpenAPI do HR+
+- `examples/` — payloads de exemplo (Zetra Consig, ConsigaMais, FinSphere)
+- `services/hrplus-api/` — serviço Fastify (TypeScript) com endpoints-base
+- `infra/helm/hrplus-api` — chart Helm simples
+- `db/migrations/` — SQL inicial
 
-## Convenções
+## Requisitos
 
-- Branch principal: `main`
-- Commit inicial: `chore: initial commit`
+- Node.js 20+
+- npm 9+
+
+## Rodando local
+
+```bash
+npm install
+npm run dev
+# abre em http://localhost:3000
+```
+
+## Build e Testes
+
+```bash
+npm run build
+npm test
+```
+
+## Documentação
+
+- Guia geral: `docs/overview.md`
+- HR+ canônico: `docs/hrplus.md`
+- OpenAPI: `openapi/hrplus.yml`
+
+## Próximos passos
+
+- Implementar persistência (PostgreSQL/Prisma) nos endpoints
+- Adicionar API Gateway e autenticação JWT/SSO
+- Criar pipelines de CI/CD e imagens container

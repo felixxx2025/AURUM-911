@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: AURUM HR+ API
+  version: 0.1.0
+  description: Endpoints principais do HR+ (exemplares)
+servers:
+  - url: https://api.aurum.example.com
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tenant_subdomain: { type: string }
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: OK
+  /api/v1/hr/people:
+    get:
+      summary: Listar pessoas
+      parameters:
+        - in: query
+          name: filter
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Criar colaborador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '201': { description: Created }
+  /api/v1/hr/people/{employeeId}:
+    get:
+      summary: Perfil colaborador
+      parameters:
+        - in: path
+          name: employeeId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    put:
+      summary: Atualizar colaborador
+      parameters:
+        - in: path
+          name: employeeId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: OK }
+  /api/v1/hr/payroll/run:
+    post:
+      summary: Iniciar processamento de folha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { simulate: { type: boolean } } }
+      responses:
+        '202': { description: Accepted }
+  /api/v1/hr/time/punch:
+    post:
+      summary: Registrar ponto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { employeeId: {type: string}, timestamp: {type: string, format: date-time}, type: {type: string}, location: {type: object}, bioProof: {type: object} } }
+      responses:
+        '201': { description: Created }
+  /api/v1/partners/zetra-consig/eligibility:
+    post:
+      summary: Elegibilidade Zetra Consig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: OK }
+  /api/v1/fin/payments/transfer:
+    post:
+      summary: Transferências de pagamento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '202': { description: Accepted }
+components: {}

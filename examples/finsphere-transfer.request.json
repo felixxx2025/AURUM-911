@@ -1,0 +1,8 @@
+{
+  "tenant_id": "00000000-0000-0000-0000-000000000000",
+  "payment_batch_id": "run-123",
+  "transfers": [
+    { "to_account": "BR1234", "amount": 1000.0, "reference": "adv-123" },
+    { "to_account": "BR2345", "amount": 50.0, "reference": "tax-123" }
+  ]
+}

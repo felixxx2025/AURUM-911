@@ -1,0 +1,13 @@
+{
+  "name": "aurum-911",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "build": "npm -ws run build",
+    "dev": "npm -w hrplus-api run dev",
+    "test": "npm -ws run test"
+  }
+}
