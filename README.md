@@ -2,7 +2,14 @@
 
 Plataforma SaaS multi-tenant white-label. Este repositório traz documentação completa e um serviço inicial (HR+ API) para acelerar o desenvolvimento.
 
-## Estrutura
+## 📋 Documentação
+
+- **[README Técnico Completo](README-TECNICO.md)** — Documento técnico de referência com arquitetura, endpoints, modelos, fluxos e roadmap
+- **[Correlação do Projeto](CORRELACAO-PROJETO.md)** — Mapeamento do que está implementado vs. planejado
+- **[Visão Geral](docs/overview.md)** — Conceitos gerais da plataforma
+- **[HR+ Detalhado](docs/hrplus.md)** — Módulo canônico com páginas, APIs e workflows
+
+## 🧱 Estrutura
 
 - `docs/` — visão geral, HR+, integrações, dashboards, RBAC, observability, runbooks, modelos SQL
 - `openapi/` — especificação OpenAPI do HR+
@@ -31,11 +38,12 @@ npm run build
 npm test
 ```
 
-## Documentação
+## 📖 Documentação Técnica
 
-- Guia geral: `docs/overview.md`
-- HR+ canônico: `docs/hrplus.md`
-- OpenAPI: `openapi/hrplus.yml`
+- **[README Técnico](README-TECNICO.md)** — Documento completo de referência
+- **[Guia Geral](docs/overview.md)** — Visão geral da plataforma
+- **[HR+ Canônico](docs/hrplus.md)** — Módulo de referência
+- **[OpenAPI](openapi/hrplus.yml)** — Especificação da API
 
 ## Próximos passos
 

@@ -15,6 +15,10 @@ jobs:
           cache: 'npm'
       - name: Install deps (root)
         run: npm install --ignore-scripts
+      - name: Prisma generate (hrplus-api)
+        run: npm -w services/hrplus-api run prisma:generate
+      - name: Lint
+        run: npm run lint
       - name: Build
         run: npm run build
       - name: Test

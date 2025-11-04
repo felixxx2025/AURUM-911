@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id         String    @id @db.Uuid
+  name       String
+  employees  Employee[]
+  createdAt  DateTime? @default(now()) @map("created_at")
+
+  @@map("tenants")
+}
+
+model Employee {
+  id            String    @id @db.Uuid
+  tenantId      String    @db.Uuid @map("tenant_id")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  employeeNumber String?  @map("employee_number")
+  firstName     String?   @map("first_name")
+  lastName      String?   @map("last_name")
+  cpf           String?
+  email         String?
+  phone         String?
+  role          String?
+  department    String?
+  hireDate      DateTime? @map("hire_date")
+  terminationDate DateTime? @map("termination_date")
+  status        String?
+  metadata      Json?
+  createdAt     DateTime? @default(now()) @map("created_at")
+
+  @@map("employees")
+}
