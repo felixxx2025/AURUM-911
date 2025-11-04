@@ -1,8 +1,8 @@
 // Flat config for ESLint v9
 import js from '@eslint/js'
-import tseslint from 'typescript-eslint'
-import importPlugin from 'eslint-plugin-import'
 import prettier from 'eslint-config-prettier'
+import importPlugin from 'eslint-plugin-import'
+import tseslint from 'typescript-eslint'
 
 export default [
   {

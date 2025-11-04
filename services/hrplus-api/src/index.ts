@@ -1,5 +1,8 @@
 import Fastify from 'fastify'
+import { z } from 'zod'
 
+import { requireAuth, requireRole, signToken } from './auth'
+import { setupMetrics } from './metrics'
 import { InMemoryPeopleRepo, PrismaPeopleRepo, type PeopleRepo } from './repo/people'
 
 function getTenantId(req: any): string | null {
@@ -26,9 +29,17 @@ if (process.env.DATABASE_URL) {
   peopleRepo = new InMemoryPeopleRepo()
 }
 
-// Simple auth placeholder
-app.post('/api/v1/auth/login', async (req, reply) => {
-  return reply.send({ access_token: 'demo', refresh_token: 'demo', tenant_id: '00000000-0000-0000-0000-000000000000', user: { id: 'u1' } })
+// Auth - emite JWT com tenant e roles
+app.post('/api/v1/auth/login', async (req: any, reply) => {
+  const body = z
+    .object({
+      user: z.string().min(1).default('u1'),
+      tenant_id: z.string().uuid().default('00000000-0000-0000-0000-000000000000'),
+      roles: z.array(z.string()).default(['hr:read','hr:write']),
+    })
+    .parse(req.body || {})
+  const token = signToken({ sub: body.user, tenant_id: body.tenant_id, roles: body.roles })
+  return reply.send({ access_token: token, token_type: 'Bearer', tenant_id: body.tenant_id, user: { id: body.user }, roles: body.roles })
 })
 
 // People
@@ -50,11 +61,18 @@ app.get('/api/v1/hr/people/:employeeId', async (req: any, reply) => {
 
 app.post('/api/v1/hr/people', async (req: any, reply) => {
   const tenantId = getTenantId(req) || '00000000-0000-0000-0000-000000000000'
-  const body = req.body || {}
+  const body = z
+    .object({
+      first_name: z.string().min(1),
+      last_name: z.string().min(1),
+      email: z.string().email().optional(),
+    })
+    .safeParse(req.body)
+  if (!body.success) return reply.code(400).send({ error: 'invalid_body', issues: body.error.issues })
   const created = await peopleRepo.create(tenantId, {
-    first_name: body.first_name,
-    last_name: body.last_name,
-    email: body.email,
+    first_name: body.data.first_name,
+    last_name: body.data.last_name,
+    email: body.data.email,
   })
   return reply.code(201).send(created)
 })
@@ -62,18 +80,25 @@ app.post('/api/v1/hr/people', async (req: any, reply) => {
 app.put('/api/v1/hr/people/:employeeId', async (req: any, reply) => {
   const tenantId = getTenantId(req) || '00000000-0000-0000-0000-000000000000'
   const { employeeId } = req.params
-  const body = req.body || {}
+  const body = z
+    .object({
+      first_name: z.string().min(1).optional(),
+      last_name: z.string().min(1).optional(),
+      email: z.string().email().optional(),
+    })
+    .safeParse(req.body)
+  if (!body.success) return reply.code(400).send({ error: 'invalid_body', issues: body.error.issues })
   const updated = await peopleRepo.update(tenantId, employeeId, {
-    first_name: body.first_name,
-    last_name: body.last_name,
-    email: body.email,
+    first_name: body.data.first_name,
+    last_name: body.data.last_name,
+    email: body.data.email,
   })
   if (!updated) return reply.code(404).send({ message: 'Not found' })
   return reply.send(updated)
 })
 
 // Payroll
-app.post('/api/v1/hr/payroll/run', async (req: any, reply) => {
+app.post('/api/v1/hr/payroll/run', { preHandler: [requireAuth, requireRole('payroll:run')] }, async (req: any, reply) => {
   const { simulate } = req.body || {}
   return reply.code(202).send({ runId: 'run-1', status: simulate ? 'simulated' : 'draft' })
 })
@@ -94,6 +119,7 @@ app.post('/api/v1/fin/payments/transfer', async (req, reply) => {
 })
 
 const port = Number(process.env.PORT || 3000)
+setupMetrics(app)
 app.listen({ port, host: '0.0.0.0' })
   .then(() => console.log(`hrplus-api up on :${port}`))
   .catch((err) => {
