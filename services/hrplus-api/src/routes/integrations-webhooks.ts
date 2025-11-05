@@ -5,6 +5,13 @@ import client from 'prom-client'
 import { inboundValidators } from '../contracts/integrations-schemas'
 import { register } from '../metrics'
 
+// Time window constants for stats and KPI calculations (in milliseconds)
+const TIME_WINDOWS = {
+  '5m': 5 * 60 * 1000,
+  '1h': 60 * 60 * 1000,
+  '24h': 24 * 60 * 60 * 1000,
+} as const
+
 type HeadersLike = Record<string, string | string[] | undefined>
 
 type InboundLog = {
@@ -99,6 +106,8 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
       if (validator && bt) {
         const r = validator.safeParse(bt)
         if (!r.success) { 
+          // Use the first error's code as representative error type for metrics
+          // Multiple errors would require aggregation strategy to be defined
           const errorType = r.error.errors[0]?.code || 'unknown'
           validationErrors_local = r.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`)
           validationErrors.inc({ provider, event_type: t || 'unknown', error_type: errorType })
@@ -188,9 +197,9 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
     // Calculate time threshold based on window
     const now = Date.now()
     let timeThreshold = 0
-    if (timeWindow === '5m') timeThreshold = now - 5 * 60 * 1000
-    else if (timeWindow === '1h') timeThreshold = now - 60 * 60 * 1000
-    else if (timeWindow === '24h') timeThreshold = now - 24 * 60 * 60 * 1000
+    if (timeWindow === '5m') timeThreshold = now - TIME_WINDOWS['5m']
+    else if (timeWindow === '1h') timeThreshold = now - TIME_WINDOWS['1h']
+    else if (timeWindow === '24h') timeThreshold = now - TIME_WINDOWS['24h']
     
     // Filter logs by time window and provider
     const filteredLogs = logs.filter(l => {
@@ -240,6 +249,7 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
     for (const provider in byProvider) {
       const rec = byProvider[provider]
       rec.verificationRate = rec.total > 0 ? rec.verified / rec.total : 0
+      // TODO: In future, success rate may differ from verification rate if we track delivery outcomes
       rec.successRate = rec.verificationRate // For now, success = verification
     }
     
@@ -269,9 +279,9 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
     
     // Time windows for different metrics
     const windows = {
-      last5m: now - 5 * 60 * 1000,
-      last1h: now - 60 * 60 * 1000,
-      last24h: now - 24 * 60 * 60 * 1000
+      last5m: now - TIME_WINDOWS['5m'],
+      last1h: now - TIME_WINDOWS['1h'],
+      last24h: now - TIME_WINDOWS['24h']
     }
     
     // Filter logs
