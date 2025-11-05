@@ -32,6 +32,7 @@ build/
 # Next.js
 .next/
 out/
+*.tsbuildinfo
 
 # Environments
 .env
