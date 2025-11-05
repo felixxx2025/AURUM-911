@@ -8,9 +8,12 @@ import {
   TrophyIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { ExportButton } from '@/components/hr/ExportButton'
+import { FilterBar } from '@/components/hr/FilterBar'
+import { SimpleChart } from '@/components/hr/SimpleChart'
 
 interface PerformanceReview {
   id: string
@@ -110,6 +113,23 @@ const statusLabels = {
 
 export default function PerformancePage() {
   const [reviews] = useState<PerformanceReview[]>(mockReviews)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [departmentFilter, setDepartmentFilter] = useState('all')
+
+  // Filtered reviews
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((review) => {
+      const matchesSearch = review.employeeName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+        review.position.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || review.status === statusFilter
+      const matchesDepartment = departmentFilter === 'all' || review.department === departmentFilter
+      
+      return matchesSearch && matchesStatus && matchesDepartment
+    })
+  }, [reviews, searchTerm, statusFilter, departmentFilter])
 
   const completedReviews = reviews.filter((r) => r.status === 'completed' || r.status === 'approved').length
   const avgScore = reviews
@@ -124,6 +144,21 @@ export default function PerformancePage() {
     return 'text-red-600'
   }
 
+  // Chart data - score distribution
+  const scoreRanges = [
+    { label: '4.5-5.0', min: 4.5, max: 5.0 },
+    { label: '3.5-4.4', min: 3.5, max: 4.4 },
+    { label: '2.5-3.4', min: 2.5, max: 3.4 },
+    { label: '0-2.4', min: 0, max: 2.4 },
+  ]
+  
+  const scoreDistribution = scoreRanges.map((range) => ({
+    label: range.label,
+    value: reviews.filter(
+      (r) => r.overallScore >= range.min && r.overallScore <= range.max
+    ).length,
+  }))
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
       <div className="sm:flex sm:items-center">
@@ -135,7 +170,12 @@ export default function PerformancePage() {
             Gerencie avaliações e acompanhe o desempenho dos colaboradores
           </p>
         </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex gap-3">
+          <ExportButton
+            data={filteredReviews}
+            filename="avaliacoes"
+            formats={['csv', 'excel', 'pdf']}
+          />
           <Button>
             <StarIcon className="h-4 w-4 mr-2" />
             Nova Avaliação
@@ -226,6 +266,45 @@ export default function PerformancePage() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <FilterBar
+        searchPlaceholder="Buscar por nome ou cargo..."
+        onSearchChange={setSearchTerm}
+        filters={[
+          {
+            label: 'Status',
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Pendente', value: 'pending' },
+              { label: 'Em Andamento', value: 'in-progress' },
+              { label: 'Concluída', value: 'completed' },
+              { label: 'Aprovada', value: 'approved' },
+            ],
+          },
+          {
+            label: 'Departamento',
+            value: departmentFilter,
+            onChange: setDepartmentFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Tecnologia', value: 'Tecnologia' },
+              { label: 'Vendas', value: 'Vendas' },
+              { label: 'Marketing', value: 'Marketing' },
+              { label: 'Produto', value: 'Produto' },
+            ],
+          },
+        ]}
+      />
+
+      {/* Chart */}
+      <SimpleChart
+        data={scoreDistribution}
+        title="Distribuição de Notas"
+        type="bar"
+      />
+
       {/* Reviews Table */}
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -264,7 +343,7 @@ export default function PerformancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {reviews.map((review) => (
+                  {filteredReviews.map((review) => (
                     <tr key={review.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                         {review.employeeName}

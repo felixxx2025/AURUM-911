@@ -8,9 +8,12 @@ import {
   PlayIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { ExportButton } from '@/components/hr/ExportButton'
+import { FilterBar } from '@/components/hr/FilterBar'
+import { SimpleChart } from '@/components/hr/SimpleChart'
 
 interface Training {
   id: string
@@ -101,12 +104,35 @@ const categoryLabels = {
 
 export default function TrainingPage() {
   const [trainings] = useState<Training[]>(mockTrainings)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+
+  // Filtered trainings
+  const filteredTrainings = useMemo(() => {
+    return trainings.filter((training) => {
+      const matchesSearch = training.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+        training.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || training.status === statusFilter
+      const matchesCategory = categoryFilter === 'all' || training.category === categoryFilter
+      
+      return matchesSearch && matchesStatus && matchesCategory
+    })
+  }, [trainings, searchTerm, statusFilter, categoryFilter])
 
   const activeTrainings = trainings.filter((t) => t.status === 'in-progress').length
   const totalEnrolled = trainings.reduce((sum, t) => sum + t.enrolledCount, 0)
   const avgCompletionRate = trainings
     .filter((t) => t.completionRate)
     .reduce((sum, t) => sum + (t.completionRate || 0), 0) / trainings.filter((t) => t.completionRate).length
+
+  // Chart data
+  const categoryChartData = Object.keys(categoryLabels).map((key) => ({
+    label: categoryLabels[key].label,
+    value: trainings.filter((t) => t.category === key).length,
+  }))
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -119,7 +145,12 @@ export default function TrainingPage() {
             Gerencie treinamentos e acompanhe o desenvolvimento dos colaboradores
           </p>
         </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex gap-3">
+          <ExportButton
+            data={filteredTrainings}
+            filename="treinamentos"
+            formats={['csv', 'excel', 'pdf']}
+          />
           <Button>
             <AcademicCapIcon className="h-4 w-4 mr-2" />
             Novo Treinamento
@@ -210,6 +241,44 @@ export default function TrainingPage() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <FilterBar
+        searchPlaceholder="Buscar por nome ou instrutor..."
+        onSearchChange={setSearchTerm}
+        filters={[
+          {
+            label: 'Status',
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Agendado', value: 'scheduled' },
+              { label: 'Em Andamento', value: 'in-progress' },
+              { label: 'Concluído', value: 'completed' },
+            ],
+          },
+          {
+            label: 'Categoria',
+            value: categoryFilter,
+            onChange: setCategoryFilter,
+            options: [
+              { label: 'Todas', value: 'all' },
+              { label: 'Técnico', value: 'technical' },
+              { label: 'Comportamental', value: 'soft-skills' },
+              { label: 'Compliance', value: 'compliance' },
+              { label: 'Liderança', value: 'leadership' },
+            ],
+          },
+        ]}
+      />
+
+      {/* Chart */}
+      <SimpleChart
+        data={categoryChartData}
+        title="Treinamentos por Categoria"
+        type="bar"
+      />
+
       {/* Trainings Table */}
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -248,7 +317,7 @@ export default function TrainingPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {trainings.map((training) => (
+                  {filteredTrainings.map((training) => (
                     <tr key={training.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                         {training.title}
