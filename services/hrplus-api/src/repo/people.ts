@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from 'crypto'
 
 export type Person = {
@@ -6,6 +7,7 @@ export type Person = {
   first_name?: string
   last_name?: string
   email?: string
+  created_at?: string
 }
 
 export type ListResult<T> = {
@@ -16,7 +18,7 @@ export type ListResult<T> = {
 }
 
 export interface PeopleRepo {
-  list(tenantId: string, page?: number, pageSize?: number): Promise<ListResult<Person>>
+  list(tenantId: string, page?: number, pageSize?: number, filter?: string): Promise<ListResult<Person>>
   get(tenantId: string, id: string): Promise<Person | null>
   create(tenantId: string, data: Omit<Person, 'id' | 'tenant_id'>): Promise<Person>
   update(
@@ -35,12 +37,23 @@ export class InMemoryPeopleRepo implements PeopleRepo {
     return this.store.get(tenantId)!
   }
 
-  async list(tenantId: string, page = 1, pageSize = 20): Promise<ListResult<Person>> {
+  async list(tenantId: string, page = 1, pageSize = 20, filter?: string): Promise<ListResult<Person>> {
     const t = this.ensureTenant(tenantId)
     const all = Array.from(t.values())
+    const q = (filter || '').trim().toLowerCase()
+    const filtered = q
+      ? all.filter(p => [p.first_name, p.last_name, p.email]
+          .some(v => (v || '').toLowerCase().includes(q)))
+      : all
+    // Ordena por created_at desc para alinhar com Prisma
+    const sorted = [...filtered].sort((a, b) => {
+      const aTs = a.created_at ? new Date(a.created_at).getTime() : 0
+      const bTs = b.created_at ? new Date(b.created_at).getTime() : 0
+      return bTs - aTs
+    })
     const start = (page - 1) * pageSize
-    const items = all.slice(start, start + pageSize)
-    return { items, page, pageSize, total: all.length }
+    const items = sorted.slice(start, start + pageSize)
+    return { items, page, pageSize, total: filtered.length }
   }
 
   async get(tenantId: string, id: string): Promise<Person | null> {
@@ -53,7 +66,7 @@ export class InMemoryPeopleRepo implements PeopleRepo {
     data: Omit<Person, 'id' | 'tenant_id'>,
   ): Promise<Person> {
     const t = this.ensureTenant(tenantId)
-    const p: Person = { id: randomUUID(), tenant_id: tenantId, ...data }
+    const p: Person = { id: randomUUID(), tenant_id: tenantId, created_at: new Date().toISOString(), ...data }
     t.set(p.id, p)
     return p
   }
@@ -79,30 +92,45 @@ export class PrismaPeopleRepo implements PeopleRepo {
     this.prisma = prismaClient
   }
 
-  async list(tenantId: string, page = 1, pageSize = 20): Promise<ListResult<Person>> {
+  async list(tenantId: string, page = 1, pageSize = 20, filter?: string): Promise<ListResult<Person>> {
+    const where = {
+      tenant_id: tenantId,
+      ...(filter
+        ? {
+            OR: [
+              { first_name: { contains: filter, mode: 'insensitive' } },
+              { last_name: { contains: filter, mode: 'insensitive' } },
+              { email: { contains: filter, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.employee.findMany({
-        where: { tenantId },
+        where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         select: {
           id: true,
-          tenantId: true,
-          firstName: true,
-          lastName: true,
+          tenant_id: true,
+          first_name: true,
+          last_name: true,
           email: true,
+          created_at: true,
         },
       }),
-      this.prisma.employee.count({ where: { tenantId } }),
+      this.prisma.employee.count({ where }),
     ])
     return {
       items: items.map((e: any) => ({
         id: e.id,
-        tenant_id: e.tenantId,
-        first_name: e.firstName ?? undefined,
-        last_name: e.lastName ?? undefined,
+        tenant_id: e.tenant_id,
+        first_name: e.first_name ?? undefined,
+        last_name: e.last_name ?? undefined,
         email: e.email ?? undefined,
+        created_at: e.created_at ? new Date(e.created_at).toISOString() : undefined,
       })),
       page,
       pageSize,
@@ -112,16 +140,17 @@ export class PrismaPeopleRepo implements PeopleRepo {
 
   async get(tenantId: string, id: string): Promise<Person | null> {
     const e = await this.prisma.employee.findFirst({
-      where: { id, tenantId },
-      select: { id: true, tenantId: true, firstName: true, lastName: true, email: true },
+      where: { id, tenant_id: tenantId },
+      select: { id: true, tenant_id: true, first_name: true, last_name: true, email: true, created_at: true },
     })
     if (!e) return null
     return {
       id: e.id,
-      tenant_id: e.tenantId,
-      first_name: e.firstName ?? undefined,
-      last_name: e.lastName ?? undefined,
+      tenant_id: e.tenant_id,
+      first_name: e.first_name ?? undefined,
+      last_name: e.last_name ?? undefined,
       email: e.email ?? undefined,
+      created_at: e.created_at ? new Date(e.created_at).toISOString() : undefined,
     }
   }
 
@@ -136,19 +165,20 @@ export class PrismaPeopleRepo implements PeopleRepo {
     const e = await this.prisma.employee.create({
       data: {
         id: randomUUID(),
-        tenantId,
-        firstName: data.first_name ?? null,
-        lastName: data.last_name ?? null,
+        tenant_id: tenantId,
+        first_name: data.first_name ?? null,
+        last_name: data.last_name ?? null,
         email: data.email ?? null,
       },
-      select: { id: true, tenantId: true, firstName: true, lastName: true, email: true },
+      select: { id: true, tenant_id: true, first_name: true, last_name: true, email: true, created_at: true },
     })
     return {
       id: e.id,
-      tenant_id: e.tenantId,
-      first_name: e.firstName ?? undefined,
-      last_name: e.lastName ?? undefined,
+      tenant_id: e.tenant_id,
+      first_name: e.first_name ?? undefined,
+      last_name: e.last_name ?? undefined,
       email: e.email ?? undefined,
+      created_at: e.created_at ? new Date(e.created_at).toISOString() : undefined,
     }
   }
 
@@ -157,23 +187,29 @@ export class PrismaPeopleRepo implements PeopleRepo {
     id: string,
     data: Partial<Omit<Person, 'id' | 'tenant_id'>>,
   ): Promise<Person | null> {
-    const exists = await this.get(tenantId, id)
-    if (!exists) return null
-    const e = await this.prisma.employee.update({
-      where: { id },
+    // Usa updateMany para permitir filtro por (id, tenant_id) sem depender de chave única composta
+    const res = await this.prisma.employee.updateMany({
+      where: { id, tenant_id: tenantId },
       data: {
-        firstName: data.first_name ?? undefined,
-        lastName: data.last_name ?? undefined,
+        first_name: data.first_name ?? undefined,
+        last_name: data.last_name ?? undefined,
         email: data.email ?? undefined,
       },
-      select: { id: true, tenantId: true, firstName: true, lastName: true, email: true },
     })
+    if (res.count === 0) return null
+
+    const e = await this.prisma.employee.findFirst({
+      where: { id, tenant_id: tenantId },
+      select: { id: true, tenant_id: true, first_name: true, last_name: true, email: true, created_at: true },
+    })
+    if (!e) return null
     return {
       id: e.id,
-      tenant_id: e.tenantId,
-      first_name: e.firstName ?? undefined,
-      last_name: e.lastName ?? undefined,
+      tenant_id: e.tenant_id,
+      first_name: e.first_name ?? undefined,
+      last_name: e.last_name ?? undefined,
       email: e.email ?? undefined,
+      created_at: e.created_at ? new Date(e.created_at).toISOString() : undefined,
     }
   }
 }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { authManager } from '@/lib/auth'
@@ -26,7 +27,7 @@ export default function LoginPage() {
     try {
       await authManager.login(formData.email, formData.password)
       router.push('/dashboard')
-    } catch (error) {
+    } catch (_) {
       setError('Email ou senha inválidos')
     } finally {
       setIsLoading(false)

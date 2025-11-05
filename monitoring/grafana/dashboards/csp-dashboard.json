@@ -1,0 +1,51 @@
+{
+  "id": null,
+  "uid": "csp-violations",
+  "title": "CSP Violations",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CSP violations rate by directive (5m)",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "fieldConfig": { "defaults": { "custom": {} }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (directive) (rate(csp_violations_total[5m]))",
+          "legendFormat": "{{directive}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "CSP violations rate by origin (5m)",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 },
+      "fieldConfig": { "defaults": { "custom": {} }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (origin) (rate(csp_violations_total[5m]))",
+          "legendFormat": "{{origin}}"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total violations (24h)",
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 18 },
+      "fieldConfig": { "defaults": { "custom": {} }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(csp_violations_total[24h]))",
+          "legendFormat": "24h"
+        }
+      ]
+    }
+  ]
+}

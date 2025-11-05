@@ -1,0 +1,24 @@
+/** Local ESLint config for hrplus-api to avoid conflicts with root flat config */
+module.exports = {
+  root: true,
+  env: { node: true, es2020: true, jest: true },
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
+  },
+  plugins: ['@typescript-eslint'],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+  overrides: [
+    {
+      files: ['**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+  ],
+  rules: {
+    // Desliga a regra problemática com versões antigas
+    '@typescript-eslint/no-unused-expressions': 'off',
+  },
+}

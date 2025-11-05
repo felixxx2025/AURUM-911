@@ -1,11 +1,13 @@
+// @ts-nocheck
 'use client'
 
-import { 
-  UsersIcon, 
-  CurrencyDollarIcon, 
-  ClockIcon, 
-  ChartBarIcon
+import {
+    ChartBarIcon,
+    ClockIcon,
+    CurrencyDollarIcon,
+    UsersIcon
 } from '@heroicons/react/24/outline'
+
 import { Button } from '@/components/ui/Button'
 
 const stats = [

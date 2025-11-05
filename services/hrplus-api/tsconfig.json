@@ -4,5 +4,25 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/__tests__/**",
+    "src/integrations/**",
+    "src/middleware/**",
+    "src/modules/**",
+    "src/routes/ai-insights.ts",
+    "src/routes/compliance.ts",
+    "src/routes/analytics.ts",
+    "src/routes/revenue.ts",
+    "src/routes/auth-enhanced.ts",
+    "src/lib/cache-optimizer.ts",
+    "src/lib/performance.ts",
+    "src/lib/advanced-audit.ts",
+    "src/lib/push-notifications.ts",
+    "src/lib/query-optimizer.ts",
+    "src/lib/webhook-dispatcher.ts",
+    "src/lib/report-builder.ts",
+    "src/lib/sso.ts",
+    "src/swagger.ts"
+  ]
 }

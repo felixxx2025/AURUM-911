@@ -1,11 +1,18 @@
-name: ci
+name: CI
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-test:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,13 +20,80 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install deps (root)
-        run: npm install --ignore-scripts
-      - name: Prisma generate (hrplus-api)
-        run: npm -w services/hrplus-api run prisma:generate
-      - name: Lint
-        run: npm run lint
-      - name: Build
-        run: npm run build
-      - name: Test
-        run: npm test
+      - name: Install deps
+        run: npm ci --include=dev
+      - name: ESLint
+        run: npm run -s lint
+
+  build-and-test:
+    name: Build, Typecheck, Test, Prisma Migrate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: aurum911
+          POSTGRES_USER: aurum
+          POSTGRES_PASSWORD: test_password_123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aurum -d aurum911" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://aurum:test_password_123@localhost:5432/aurum911
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --include=dev
+      - name: Generate Prisma client
+        run: npm -w services/hrplus-api run -s prisma:generate
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            nc -zv 127.0.0.1 5432 && break
+            sleep 1
+          done
+      - name: Apply Prisma migrations
+        run: npm -w services/hrplus-api run -s prisma:migrate:deploy
+      - name: Typecheck API
+        run: npm -w services/hrplus-api run -s build
+      - name: Typecheck Web
+        run: npm -w apps/web run -s build
+      - name: Run API tests (if present)
+        run: npm -w services/hrplus-api run -s test --if-present
+      - name: Upload API dist artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: services/hrplus-api/dist
+      - name: Upload Web .next artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-next
+          path: apps/web/.next
+
+  security-audit:
+    name: Security audit (npm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install deps
+        run: npm ci --include=dev
+      - name: npm audit (non-blocking)
+        run: |
+          npm audit --production --audit-level=high || true
+          npm audit --omit=dev --audit-level=critical || true

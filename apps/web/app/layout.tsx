@@ -1,5 +1,9 @@
-import './globals.css'
 import { Inter } from 'next/font/google'
+
+import './globals.css'
+import Providers from './providers'
+
+import NetworkBanner from '@/components/NetworkBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        {children}
+        <Providers>
+          <NetworkBanner />
+          {children}
+        </Providers>
       </body>
     </html>
   )

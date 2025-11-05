@@ -1,0 +1,7 @@
+{
+  "id": "gupy-env",
+  "name": "AURUM Gupy Sandbox",
+  "values": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "text", "enabled": true }
+  ]
+}
