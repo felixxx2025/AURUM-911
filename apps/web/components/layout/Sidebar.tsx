@@ -10,7 +10,10 @@ import {
   ChartBarIcon,
   Cog6ToothIcon,
   XMarkIcon,
-  Bars3Icon
+  Bars3Icon,
+  AcademicCapIcon,
+  StarIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import { clsx } from 'clsx'
 import Link from 'next/link'
@@ -22,13 +25,16 @@ const navigation = [
   { name: 'Colaboradores', href: '/hr/people', icon: UsersIcon },
   { name: 'Folha de Pagamento', href: '/hr/payroll', icon: CurrencyDollarIcon },
   { name: 'Ponto', href: '/hr/time', icon: ClockIcon },
+  { name: 'Férias', href: '/hr/vacation', icon: CalendarIcon },
+  { name: 'Treinamentos', href: '/hr/training', icon: AcademicCapIcon },
+  { name: 'Avaliações', href: '/hr/performance', icon: StarIcon },
   { name: 'Recrutamento', href: '/hr/recruitment', icon: BriefcaseIcon },
   { name: 'Benefícios', href: '/hr/benefits', icon: HeartIcon },
+  { name: 'Relatórios', href: '/hr/reports', icon: ChartBarIcon },
   { name: 'Módulos', href: '/modules', icon: ChartBarIcon },
   { name: 'Marketplace', href: '/marketplace', icon: BriefcaseIcon },
   { name: 'Integrações', href: '/integrations', icon: Cog6ToothIcon },
   { name: 'Administração', href: '/admin', icon: Cog6ToothIcon },
-  { name: 'Relatórios', href: '/hr/reports', icon: ChartBarIcon },
 ]
 
 interface SidebarProps {
