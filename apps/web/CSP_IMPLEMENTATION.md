@@ -14,8 +14,8 @@ The middleware generates a unique nonce for each request using cryptographically
 function generateNonce(): string {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
-  // Convert to base64 using browser-compatible btoa
-  return btoa(String.fromCharCode(...array))
+  // Convert to base64 - using Array.from for better safety
+  return btoa(Array.from(array, byte => String.fromCharCode(byte)).join(''))
 }
 ```
 

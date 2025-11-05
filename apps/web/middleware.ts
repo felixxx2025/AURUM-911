@@ -7,8 +7,8 @@ import type { NextRequest } from 'next/server'
 function generateNonce(): string {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
-  // Convert to base64 using browser-compatible btoa
-  return btoa(String.fromCharCode(...array))
+  // Convert to base64 - using Array.from for better safety
+  return btoa(Array.from(array, byte => String.fromCharCode(byte)).join(''))
 }
 
 /**
@@ -38,7 +38,7 @@ export function middleware(request: NextRequest) {
   let isRedirect = false
   
   // Handle subdomain routing
-  if (subdomain && subdomain !== 'www' && !hostname.includes('localhost') && hostname !== 'aurum.cool' && hostname !== 'www.aurum.cool') {
+  if (shouldSetSubdomainHeader(subdomain, hostname)) {
     // Rewrite to tenant-specific pages if needed
     if (url.pathname === '/') {
       url.pathname = '/auth/login'

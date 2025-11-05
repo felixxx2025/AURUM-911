@@ -18,12 +18,12 @@ import { headers } from 'next/headers'
  * Get the CSP nonce from request headers
  * This nonce is generated in middleware.ts for each request
  */
-export function getNonce(): string | undefined {
+export function getNonce(): string | null {
   try {
     const headersList = headers()
-    return headersList.get('x-nonce') ?? undefined
+    return headersList.get('x-nonce')
   } catch {
     // headers() can only be called in Server Components
-    return undefined
+    return null
   }
 }
