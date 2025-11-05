@@ -37,12 +37,8 @@ export function middleware(request: NextRequest) {
   // Determine the response type
   let isRedirect = false
   
-  // Skip middleware for localhost and main domain
-  if (hostname.includes('localhost') || hostname === 'aurum.cool' || hostname === 'www.aurum.cool') {
-    // No special handling needed
-  }
   // Handle subdomain routing
-  else if (subdomain && subdomain !== 'www') {
+  if (subdomain && subdomain !== 'www' && !hostname.includes('localhost') && hostname !== 'aurum.cool' && hostname !== 'www.aurum.cool') {
     // Rewrite to tenant-specific pages if needed
     if (url.pathname === '/') {
       url.pathname = '/auth/login'
