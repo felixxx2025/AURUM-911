@@ -92,7 +92,25 @@ function tryVerifyGeneric(headers: HeadersLike, body: unknown, secret?: string):
 
 export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
   // Recebe webhooks de provedores externos
-  app.post('/integrations/webhooks/:provider', { schema: { tags: ['integrations'], security: [], body: { type: ['object','string'] }, response: { 202: { type: 'object', properties: { status: { type: 'string' }, id: { type: 'string' }, verified: { type: 'boolean' } }, required: ['status','id','verified'] }, 400: { type: 'object', properties: { error: { type: 'string' }, details: { type: 'array', items: { type: 'string' } } }, required: ['error'] } } } }, async (request: FastifyRequest<{ Params: { provider: string }; Body: unknown }>, reply: FastifyReply) => {
+  // Note: Rate limiting is configured globally via @fastify/rate-limit in app.ts
+  // For production, consider per-provider rate limits based on SLA agreements
+  // Webhooks are also protected by HMAC signature verification
+  app.post('/integrations/webhooks/:provider', { 
+    schema: { 
+      tags: ['integrations'], 
+      security: [], 
+      body: { type: ['object','string'] }, 
+      response: { 
+        202: { type: 'object', properties: { status: { type: 'string' }, id: { type: 'string' }, verified: { type: 'boolean' } }, required: ['status','id','verified'] }, 
+        400: { type: 'object', properties: { error: { type: 'string' }, details: { type: 'array', items: { type: 'string' } } }, required: ['error'] } 
+      } 
+    },
+    config: {
+      // Per-route rate limit: 1000 requests per minute per IP for webhooks
+      // This is generous to accommodate legitimate provider traffic bursts
+      rateLimit: { max: 1000, timeWindow: '1 minute' }
+    }
+  }, async (request: FastifyRequest<{ Params: { provider: string }; Body: unknown }>, reply: FastifyReply) => {
     const endTimer = inboundLatency.startTimer()
     const provider = String(request.params.provider || '').toLowerCase()
     const rawSecretEnv = `AURUM_INTEGRATIONS_${provider.replace(/[^a-z0-9]/g,'').toUpperCase()}_WEBHOOK_SECRET`
@@ -218,7 +236,7 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
       verificationRate: number
       latestReceived?: string
       oldestReceived?: string
-    }> = {}
+    }> = Object.create(null) // Use null prototype to prevent prototype pollution
     
     for (const l of filteredLogs) {
       if (!byProvider[l.provider]) {
@@ -322,7 +340,7 @@ export async function integrationsInboundWebhooksRoutes(app: FastifyInstance) {
       verified: number
       verificationRate: number
       last5mCount: number
-    }> = {}
+    }> = Object.create(null) // Use null prototype to prevent prototype pollution
     
     for (const log of filteredLogs) {
       if (!providerMetrics[log.provider]) {
