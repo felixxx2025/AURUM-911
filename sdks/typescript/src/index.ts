@@ -60,8 +60,9 @@ export class AURUMClient {
   }
 }
 
-export * from './providers/clicksign'
 export * from './providers/belvo'
-export * from './providers/stripe'
+export * from './providers/clicksign'
 export * from './providers/gupy'
 export * from './providers/idwall'
+export * from './providers/stripe'
+

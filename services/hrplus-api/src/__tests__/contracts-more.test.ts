@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 import {
-  inboundValidators,
+    inboundValidators,
 } from '../contracts/integrations-schemas'
 
 describe('inboundValidators (novos conectores)', () => {

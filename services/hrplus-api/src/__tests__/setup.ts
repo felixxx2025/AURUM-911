@@ -1,5 +1,5 @@
 // Jest setup for API tests
-export {}
+export { }
 import { jest } from '@jest/globals'
 
 // Mock environment variables

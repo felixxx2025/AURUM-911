@@ -1,5 +1,5 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import crypto from 'node:crypto'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import crypto from 'node:crypto';
 
 type PilotStatus = 'pending' | 'started' | 'succeeded' | 'failed'
 

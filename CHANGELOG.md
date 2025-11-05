@@ -5,6 +5,7 @@ All notable changes to AURUM-911 will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
 - Partner Portal: KPIs de Webhooks na aba Conectores (cards agregados + tabela por provider, auto-refresh 10s)
 - API: endpoint `/integrations/webhooks/stats` com agregados por provider (total, verificados, não verificados)
 - API: registro central `inboundValidators` e contratos Zod opcionais por provider+type
@@ -12,10 +13,12 @@ All notable changes to AURUM-911 will be documented in this file.
 - Observability: dashboard Grafana (stub) para integrações e alerta Prometheus para taxa de 4xx em inbound
 
 ### Changed
+
 - Rota inbound refatorada para usar registro de validadores
 - Comentários de lint em blocos `catch` de pilotos, mantendo robustez sem warnings
 
 ### Docs
+
 - Atualização de `docs/integrations.md` com lista de eventos validados opcionalmente
 - Atualização de `docs/pilots-quickstart.md` com KPIs na UI
 - Reforço do formato de assinatura `x-aurum-signature` em `docs/integrations-security.md`
@@ -25,6 +28,7 @@ All notable changes to AURUM-911 will be documented in this file.
 ### 🎉 Initial Release - Enterprise SaaS Platform
 
 #### ✨ Features Added
+
 - **Authentication & Security**
   - Multi-Factor Authentication (MFA) with TOTP
   - JWT with refresh token rotation
@@ -85,6 +89,7 @@ All notable changes to AURUM-911 will be documented in this file.
   - Terraform infrastructure as code
 
 #### 🛠️ Technical Improvements
+
 - TypeScript throughout the entire codebase
 - Comprehensive test coverage
 - Docker containerization
@@ -93,6 +98,7 @@ All notable changes to AURUM-911 will be documented in this file.
 - Performance optimization and monitoring
 
 #### 📚 Documentation
+
 - Complete production deployment guide
 - API documentation with OpenAPI
 - Developer SDK documentation
@@ -100,6 +106,7 @@ All notable changes to AURUM-911 will be documented in this file.
 - Security and compliance guides
 
 ### 🔧 Infrastructure
+
 - **Backend**: Node.js 20+, Fastify, PostgreSQL, Redis
 - **Frontend**: Next.js 14, React, Tailwind CSS
 - **Deployment**: Kubernetes, Docker, AWS
@@ -107,6 +114,7 @@ All notable changes to AURUM-911 will be documented in this file.
 - **Security**: Helmet, Rate limiting, MFA, Audit logs
 
 ### 📊 Metrics
+
 - 156 features implemented
 - 50+ backend modules
 - 15+ frontend pages
@@ -120,12 +128,14 @@ All notable changes to AURUM-911 will be documented in this file.
 ## Future Releases
 
 ### [1.1.0] - Planned
+
 - Advanced AI features
 - Additional integrations
 - Enhanced mobile experience
 - Multi-region deployment
 
 ### [1.2.0] - Planned
+
 - Advanced reporting
 - Custom workflows
 - API rate limiting tiers
