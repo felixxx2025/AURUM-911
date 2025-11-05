@@ -8,9 +8,12 @@ import {
   SunIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { ExportButton } from '@/components/hr/ExportButton'
+import { FilterBar } from '@/components/hr/FilterBar'
+import { SimpleChart } from '@/components/hr/SimpleChart'
 
 interface Vacation {
   id: string
@@ -103,6 +106,23 @@ const typeLabels = {
 
 export default function VacationPage() {
   const [vacations] = useState<Vacation[]>(mockVacations)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+
+  // Filtered vacations
+  const filteredVacations = useMemo(() => {
+    return vacations.filter((vacation) => {
+      const matchesSearch = vacation.employeeName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+        vacation.department.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || vacation.status === statusFilter
+      const matchesType = typeFilter === 'all' || vacation.type === typeFilter
+      
+      return matchesSearch && matchesStatus && matchesType
+    })
+  }, [vacations, searchTerm, statusFilter, typeFilter])
 
   const pendingRequests = vacations.filter((v) => v.status === 'pending').length
   const approvedVacations = vacations.filter((v) => v.status === 'approved').length
@@ -110,6 +130,12 @@ export default function VacationPage() {
   const totalDays = vacations
     .filter((v) => v.status === 'approved' || v.status === 'in-progress')
     .reduce((sum, v) => sum + v.days, 0)
+
+  // Chart data - status distribution
+  const statusChartData = Object.keys(statusLabels).map((key) => ({
+    label: statusLabels[key].label,
+    value: vacations.filter((v) => v.status === key).length,
+  }))
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -122,7 +148,12 @@ export default function VacationPage() {
             Gerencie solicitações de férias e acompanhe períodos de ausência
           </p>
         </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex gap-3">
+          <ExportButton
+            data={filteredVacations}
+            filename="ferias"
+            formats={['csv', 'excel', 'pdf']}
+          />
           <Button>
             <CalendarIcon className="h-4 w-4 mr-2" />
             Solicitar Férias
@@ -213,6 +244,45 @@ export default function VacationPage() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <FilterBar
+        searchPlaceholder="Buscar por nome ou departamento..."
+        onSearchChange={setSearchTerm}
+        filters={[
+          {
+            label: 'Status',
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Pendente', value: 'pending' },
+              { label: 'Aprovado', value: 'approved' },
+              { label: 'Rejeitado', value: 'rejected' },
+              { label: 'Em Andamento', value: 'in-progress' },
+              { label: 'Concluído', value: 'completed' },
+            ],
+          },
+          {
+            label: 'Tipo',
+            value: typeFilter,
+            onChange: setTypeFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Anual', value: 'annual' },
+              { label: 'Coletivo', value: 'collective' },
+              { label: 'Médico', value: 'medical' },
+            ],
+          },
+        ]}
+      />
+
+      {/* Chart */}
+      <SimpleChart
+        data={statusChartData}
+        title="Distribuição por Status"
+        type="bar"
+      />
+
       {/* Vacations Table */}
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -254,7 +324,7 @@ export default function VacationPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {vacations.map((vacation) => (
+                  {filteredVacations.map((vacation) => (
                     <tr key={vacation.id} className="hover:bg-gray-50">
                       <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                         {vacation.employeeName}
