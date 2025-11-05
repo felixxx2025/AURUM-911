@@ -29,6 +29,10 @@ package-lock.json
 dist/
 build/
 
+# Next.js
+.next/
+out/
+
 # Environments
 .env
 .env.*
