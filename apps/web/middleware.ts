@@ -8,7 +8,12 @@ import type { NextRequest } from 'next/server'
 function generateNonce(): string {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
-  return Buffer.from(array).toString('base64')
+  // Convert to base64 without using Node.js Buffer (Edge Runtime compatible)
+  let binary = ''
+  for (let i = 0; i < array.length; i++) {
+    binary += String.fromCharCode(array[i])
+  }
+  return btoa(binary)
 }
 
 /**
@@ -88,6 +93,8 @@ export function middleware(request: NextRequest) {
   }
   
   // Add nonce and CSP headers to response
+  // Note: x-nonce header is used by server components to access the nonce value
+  // It's exposed intentionally for this purpose
   response.headers.set('x-nonce', nonce)
   response.headers.set('Content-Security-Policy', csp)
   

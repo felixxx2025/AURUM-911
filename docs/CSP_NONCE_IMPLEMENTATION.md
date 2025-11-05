@@ -170,10 +170,10 @@ export default function MyClientComponent() {
 
 ## Related Files
 
-- `apps/web/middleware.ts` - Nonce generation and header injection
+- `apps/web/middleware.ts` - Nonce generation, CSP building, and header injection
 - `apps/web/lib/nonce.ts` - Nonce utility functions
 - `apps/web/app/layout.tsx` - Root layout with nonce integration
-- `apps/web/next.config.js` - CSP header configuration
+- `apps/web/next.config.js` - Other security headers (X-Frame-Options, HSTS, etc.)
 - `apps/web/app/csp-report/route.ts` - CSP violation reporting endpoint
 
 ## References
