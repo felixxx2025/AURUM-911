@@ -21,7 +21,7 @@ import { headers } from 'next/headers'
 export function getNonce(): string | undefined {
   try {
     const headersList = headers()
-    return headersList.get('x-nonce') || undefined
+    return headersList.get('x-nonce') ?? undefined
   } catch {
     // headers() can only be called in Server Components
     return undefined

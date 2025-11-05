@@ -7,7 +7,21 @@ import type { NextRequest } from 'next/server'
 function generateNonce(): string {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
-  return Buffer.from(array).toString('base64')
+  // Convert to base64 using browser-compatible btoa
+  return btoa(String.fromCharCode(...array))
+}
+
+/**
+ * Determines if subdomain header should be set based on hostname
+ */
+function shouldSetSubdomainHeader(subdomain: string, hostname: string): boolean {
+  return (
+    subdomain !== '' &&
+    subdomain !== 'www' &&
+    !hostname.includes('localhost') &&
+    hostname !== 'aurum.cool' &&
+    hostname !== 'www.aurum.cool'
+  )
 }
 
 export function middleware(request: NextRequest) {
@@ -80,7 +94,7 @@ export function middleware(request: NextRequest) {
   response.headers.set('x-nonce', nonce)
   
   // Set subdomain header if applicable
-  if (subdomain && subdomain !== 'www' && !hostname.includes('localhost') && hostname !== 'aurum.cool' && hostname !== 'www.aurum.cool') {
+  if (shouldSetSubdomainHeader(subdomain, hostname)) {
     response.headers.set('x-subdomain', subdomain)
   }
   
