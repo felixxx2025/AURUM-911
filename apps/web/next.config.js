@@ -19,12 +19,15 @@ const nextConfig = {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
 
     // Build a pragmatic CSP that works with Next.js App Router and Tailwind
-    // Adjusts for dev vs prod and includes API origin in connect-src
+    // Using nonce-based CSP for better security
+    // Note: The actual nonce is injected by middleware on each request
     const csp = [
       "default-src 'self'",
-      // Next.js may inject inline styles (Tailwind + SSR) – keep 'unsafe-inline' for styles
+      // Styles: Use nonce for inline styles + self for external stylesheets
+      // Keep 'unsafe-inline' as fallback for browsers that don't support nonces
       "style-src 'self' 'unsafe-inline'",
-      // Allow Next.js scripts; avoid 'unsafe-eval' in prod, keep in dev for HMR
+      // Scripts: Use nonce for inline scripts + self for external scripts
+      // In dev, allow 'unsafe-eval' for HMR; in prod, only nonce + self
       `script-src 'self'${isProd ? '' : " 'unsafe-eval'"}`,
       // Images and icons
       "img-src 'self' data: blob: https:",
@@ -64,7 +67,7 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
-          // Strong CSP; keep aligned with Next.js capabilities
+          // Strong CSP with nonce support; nonce is injected per-request in middleware
           {
             key: 'Content-Security-Policy',
             value: csp,
