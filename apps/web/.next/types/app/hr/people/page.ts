@@ -1,4 +1,4 @@
-// File: /root/AURUM-911/apps/web/app/hr/people/page.tsx
+// File: /home/runner/work/AURUM-911/AURUM-911/apps/web/app/hr/people/page.tsx
 import * as entry from '../../../../../app/hr/people/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
