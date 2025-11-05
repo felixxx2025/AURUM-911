@@ -1,50 +1,46 @@
 {
-  "annotations": {"list": []},
+  "annotations": { "list": [] },
   "panels": [
     {
       "type": "stat",
       "title": "Inbound Webhooks (total)",
-      "targets": [
-        {"expr": "sum(integrations_inbound_webhooks_total)"}
-      ],
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+      "targets": [{ "expr": "sum(integrations_inbound_webhooks_total)" }],
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }
     },
     {
       "type": "stat",
       "title": "Inbound Verificados",
-      "targets": [
-        {"expr": "sum(integrations_inbound_webhooks_total{verified=\"true\"})"}
-      ],
-      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}
+      "targets": [{ "expr": "sum(integrations_inbound_webhooks_total{verified=\"true\"})" }],
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 }
     },
     {
       "type": "stat",
       "title": "Inbound Não Verificados",
-      "targets": [
-        {"expr": "sum(integrations_inbound_webhooks_total{verified=\"false\"})"}
-      ],
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}
+      "targets": [{ "expr": "sum(integrations_inbound_webhooks_total{verified=\"false\"})" }],
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 }
     },
     {
       "type": "graph",
       "title": "Taxa 4xx Inbound (5m)",
       "targets": [
-        {"expr": "sum by (provider) (rate(integrations_inbound_webhooks_4xx_total[5m]))"}
+        { "expr": "sum by (provider) (rate(integrations_inbound_webhooks_4xx_total[5m]))" }
       ],
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }
     },
     {
       "type": "heatmap",
       "title": "Latência Inbound por provider",
       "targets": [
-        {"expr": "sum by (le,provider) (rate(integrations_inbound_webhook_duration_seconds_bucket[5m]))"}
+        {
+          "expr": "sum by (le,provider) (rate(integrations_inbound_webhook_duration_seconds_bucket[5m]))"
+        }
       ],
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }
     }
   ],
   "schemaVersion": 30,
   "title": "AURUM-911 Integrations",
-  "time": {"from": "now-6h", "to": "now"},
+  "time": { "from": "now-6h", "to": "now" },
   "timezone": "browser",
   "version": 1
 }
