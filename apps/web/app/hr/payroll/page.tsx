@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { CurrencyDollarIcon, PlayIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline'

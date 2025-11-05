@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { ChartBarIcon, DocumentArrowDownIcon, CalendarIcon } from '@heroicons/react/24/outline'

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { BriefcaseIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'

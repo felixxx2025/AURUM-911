@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { HeartIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
@@ -112,6 +111,7 @@ export default function BenefitsPage() {
 
   const totalCost = benefits.reduce((sum, b) => sum + b.monthlyCost, 0)
   const totalEnrolled = benefits.reduce((sum, b) => sum + b.enrolledEmployees, 0)
+  const avgCostPerEmployee = totalEnrolled > 0 ? totalCost / totalEnrolled : 0
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
@@ -211,7 +211,7 @@ export default function BenefitsPage() {
                     {new Intl.NumberFormat('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
-                    }).format(totalCost / 1247)}
+                    }).format(avgCostPerEmployee)}
                   </dd>
                 </dl>
               </div>

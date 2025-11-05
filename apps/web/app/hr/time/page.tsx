@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { ClockIcon, CalendarIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
