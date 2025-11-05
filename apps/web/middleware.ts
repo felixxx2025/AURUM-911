@@ -20,25 +20,20 @@ export function middleware(request: NextRequest) {
   // Extract subdomain
   const subdomain = hostname.split('.')[0]
   
-  // Create the response
-  let response: NextResponse
+  // Determine the response type
+  let isRedirect = false
   
   // Skip middleware for localhost and main domain
   if (hostname.includes('localhost') || hostname === 'aurum.cool' || hostname === 'www.aurum.cool') {
-    response = NextResponse.next()
+    // No special handling needed
   }
   // Handle subdomain routing
   else if (subdomain && subdomain !== 'www') {
     // Rewrite to tenant-specific pages if needed
     if (url.pathname === '/') {
       url.pathname = '/auth/login'
-      response = NextResponse.redirect(url)
-    } else {
-      response = NextResponse.next()
+      isRedirect = true
     }
-    response.headers.set('x-subdomain', subdomain)
-  } else {
-    response = NextResponse.next()
   }
   
   // Set nonce in request headers so it can be accessed in the layout
@@ -51,8 +46,8 @@ export function middleware(request: NextRequest) {
   
   const csp = [
     "default-src 'self'",
-    // Use nonce for styles instead of 'unsafe-inline'
-    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    // Use nonce for styles - browsers that support nonces will use them, older browsers will be blocked
+    `style-src 'self' 'nonce-${nonce}'`,
     // Use nonce for scripts, keep 'unsafe-eval' in dev for HMR
     `script-src 'self' 'nonce-${nonce}'${isProd ? '' : " 'unsafe-eval'"}`,
     "img-src 'self' data: blob: https:",
@@ -69,18 +64,27 @@ export function middleware(request: NextRequest) {
     .filter(Boolean)
     .join('; ')
   
+  // Create response with appropriate type
+  const response = isRedirect 
+    ? NextResponse.redirect(url)
+    : NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      })
+  
   // Set CSP header with nonce
   response.headers.set('Content-Security-Policy', csp)
   
-  // Set nonce in a custom header so the layout can access it
+  // Set nonce in response header so the layout can access it
   response.headers.set('x-nonce', nonce)
   
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-    headers: response.headers,
-  })
+  // Set subdomain header if applicable
+  if (subdomain && subdomain !== 'www' && !hostname.includes('localhost') && hostname !== 'aurum.cool' && hostname !== 'www.aurum.cool') {
+    response.headers.set('x-subdomain', subdomain)
+  }
+  
+  return response
 }
 
 export const config = {

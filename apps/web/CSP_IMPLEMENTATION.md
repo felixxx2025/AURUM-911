@@ -23,14 +23,16 @@ function generateNonce(): string {
 The middleware sets CSP headers with the nonce for both scripts and styles:
 
 ```
-script-src 'self' 'nonce-{random-value}' 'unsafe-eval' (in dev)
-style-src 'self' 'nonce-{random-value}' 'unsafe-inline'
+script-src 'self' 'nonce-{random-value}' 'unsafe-eval' (in dev only)
+style-src 'self' 'nonce-{random-value}'
 ```
 
 Key points:
-- `'nonce-{value}'`: Allows scripts/styles with matching nonce attribute
-- `'unsafe-inline'`: Kept as fallback for older browsers that don't support nonces
+- `'nonce-{value}'`: Only allows scripts/styles with matching nonce attribute
 - `'unsafe-eval'`: Only enabled in development for Hot Module Replacement (HMR)
+- `'unsafe-inline'` is NOT used, ensuring maximum security
+
+**Note**: This strict CSP means that older browsers that don't support nonces will block inline scripts/styles. This is intentional for maximum security. If broader compatibility is required, `'unsafe-inline'` can be added as a fallback, though browsers that support nonces will ignore it.
 
 ### 3. Accessing the Nonce
 
@@ -58,14 +60,16 @@ export default function MyComponent() {
 ## Security Benefits
 
 1. **Prevents XSS attacks**: Only scripts/styles with the correct nonce can execute
-2. **Dynamic validation**: New nonce for each request makes attacks harder
-3. **No broad 'unsafe-inline'**: Reduces attack surface compared to allowing all inline content
+2. **Dynamic validation**: New nonce for each request makes replay attacks impossible
+3. **Strict policy**: No 'unsafe-inline' means maximum protection
 4. **CSP violation reporting**: Violations are reported to `/csp-report` endpoint
 
 ## Browser Support
 
-- Modern browsers: Full nonce support
-- Older browsers: Fallback to `'unsafe-inline'` for compatibility
+- Modern browsers (Chrome 59+, Firefox 52+, Safari 10+): Full nonce support with strict validation
+- Older browsers: Will block inline scripts/styles without nonces (by design for security)
+
+If you need broader compatibility, you can add `'unsafe-inline'` to the CSP directives, though browsers that support nonces will ignore it in favor of nonce validation.
 
 ## Testing
 
