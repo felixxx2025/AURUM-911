@@ -69,16 +69,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 }
 ```
 
-### 4. CSP Configuration (`next.config.js`)
+### 4. CSP Configuration (`middleware.ts` and `next.config.js`)
 
-The CSP header configuration is designed to work with nonces:
+The CSP header is now dynamically generated in middleware with the nonce:
 
 ```javascript
-"style-src 'self' 'unsafe-inline'",
-"script-src 'self'${isProd ? '' : " 'unsafe-eval'"}",
+function buildCSP(nonce: string, isProd: boolean, apiUrl: string): string {
+  const csp = [
+    "default-src 'self'",
+    `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+    `script-src 'self' 'nonce-${nonce}'${isProd ? '' : " 'unsafe-eval'"}`,
+    // ... other directives
+  ].join('; ')
+  
+  return csp
+}
 ```
 
-**Note:** Currently, `'unsafe-inline'` is kept as a fallback for browsers that don't support nonces. In the future, when adding inline scripts/styles, use the nonce attribute:
+**Key Points:**
+- CSP is set per-request in middleware, not in next.config.js
+- Each request gets a unique nonce in the CSP header
+- `'unsafe-inline'` is kept as a fallback for browsers that don't support nonces
+- In development, `'unsafe-eval'` is allowed for HMR (Hot Module Replacement)
+
+To use the nonce with inline scripts/styles:
 
 ```html
 <script nonce={nonce}>

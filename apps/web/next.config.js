@@ -16,40 +16,6 @@ const nextConfig = {
   },
   async headers() {
     const isProd = process.env.NODE_ENV === 'production'
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-
-    // Build a pragmatic CSP that works with Next.js App Router and Tailwind
-    // Using nonce-based CSP for better security
-    // Note: The actual nonce is injected by middleware on each request
-    const csp = [
-      "default-src 'self'",
-      // Styles: Use nonce for inline styles + self for external stylesheets
-      // Keep 'unsafe-inline' as fallback for browsers that don't support nonces
-      "style-src 'self' 'unsafe-inline'",
-      // Scripts: Use nonce for inline scripts + self for external scripts
-      // In dev, allow 'unsafe-eval' for HMR; in prod, only nonce + self
-      `script-src 'self'${isProd ? '' : " 'unsafe-eval'"}`,
-      // Images and icons
-      "img-src 'self' data: blob: https:",
-      // Fonts
-      "font-src 'self' data:",
-      // API calls, HMR/websocket in dev, and same-origin
-      `connect-src 'self' ${apiUrl || ''} ${isProd ? '' : 'ws: wss: http: https:'}`.trim(),
-      // Disallow framing
-      "frame-ancestors 'none'",
-      // Hardening
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      // Web workers and next dev overlay
-      "worker-src 'self' blob:",
-      // Manifest
-      "manifest-src 'self'",
-      // Send CSP violation reports to a local endpoint that is not proxied by rewrites
-      'report-uri /csp-report',
-    ]
-      .filter(Boolean)
-      .join('; ')
 
     return [
       {
@@ -67,11 +33,8 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
-          // Strong CSP with nonce support; nonce is injected per-request in middleware
-          {
-            key: 'Content-Security-Policy',
-            value: csp,
-          },
+          // Note: Content-Security-Policy is now set dynamically in middleware.ts
+          // with per-request nonces for enhanced security
           // Optional Reporting-Endpoints header to support the reporting API in modern browsers
           {
             key: 'Reporting-Endpoints',
