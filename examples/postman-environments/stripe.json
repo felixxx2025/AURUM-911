@@ -1,0 +1,8 @@
+{
+  "id": "stripe-env",
+  "name": "AURUM Stripe Sandbox",
+  "values": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "text", "enabled": true },
+    { "key": "webhookSecret", "value": "changeme", "type": "text", "enabled": true }
+  ]
+}

@@ -1,0 +1,6 @@
+Contact: mailto:security@aurum.cool
+Policy: https://github.com/felixxx2025/AURUM-911/blob/main/SECURITY.md
+Preferred-Languages: pt, en
+Canonical: https://aurum.cool/.well-known/security.txt
+Acknowledgments: https://github.com/felixxx2025/AURUM-911/blob/main/HALL_OF_FAME.md
+Hiring: https://aurum.cool/careers

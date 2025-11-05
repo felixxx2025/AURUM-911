@@ -8,78 +8,138 @@ datasource db {
 }
 
 model Tenant {
-  id         String    @id @db.Uuid
-  name       String
-  employees  Employee[]
-  payrollRuns PayrollRun[]
-  timePunches TimePunch[]
-  partners    Partner[]
-  createdAt  DateTime? @default(now()) @map("created_at")
+  id          String   @id @default(cuid())
+  name        String
+  subdomain   String   @unique
+  cnpj        String?
+  plan        String   @default("basic")
+  logo_url    String?
+  primary_color String @default("#3b82f6")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
+  users       User[]
+  employees   Employee[]
+  
   @@map("tenants")
 }
 
-model Employee {
-  id            String    @id @db.Uuid
-  tenantId      String    @db.Uuid @map("tenant_id")
-  tenant        Tenant    @relation(fields: [tenantId], references: [id])
-  employeeNumber String?  @map("employee_number")
-  firstName     String?   @map("first_name")
-  lastName      String?   @map("last_name")
-  cpf           String?
-  email         String?
-  phone         String?
-  role          String?
-  department    String?
-  hireDate      DateTime? @map("hire_date")
-  terminationDate DateTime? @map("termination_date")
-  status        String?
-  metadata      Json?
-  createdAt     DateTime? @default(now()) @map("created_at")
-  timePunches   TimePunch[]
+model User {
+  id          String   @id @default(cuid())
+  tenant_id   String
+  email       String   @unique
+  password    String
+  name        String?
+  role        String   @default("HR_USER")
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id])
+  
+  @@map("users")
+}
+
+model Employee {
+  id          String   @id @default(cuid())
+  tenant_id   String
+  cpf         String?
+  first_name  String
+  last_name   String
+  email       String?
+  phone       String?
+  hire_date   DateTime?
+  salary      Decimal?
+  department  String?
+  position    String?
+  status      String   @default("active")
+  metadata    Json?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenant_id], references: [id])
+  
+  @@unique([tenant_id, cpf])
   @@map("employees")
 }
 
-model PayrollRun {
-  id         String   @id @db.Uuid
-  tenantId   String   @db.Uuid @map("tenant_id")
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
-  periodStart DateTime? @map("period_start")
-  periodEnd   DateTime? @map("period_end")
-  status     String?
-  totals     Json?
-  createdBy  String?  @db.Uuid @map("created_by")
-  createdAt  DateTime? @default(now()) @map("created_at")
-
-  @@map("payroll_runs")
+model RefreshToken {
+  id         String   @id @default(cuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+  
+  @@map("refresh_tokens")
 }
 
-model TimePunch {
-  id         String   @id @db.Uuid
-  tenantId   String   @db.Uuid @map("tenant_id")
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
-  employeeId String   @db.Uuid @map("employee_id")
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  ts         DateTime?
-  type       String?
-  location   Json?
-  bioProof   Json?    @map("bio_proof")
-  createdAt  DateTime? @default(now()) @map("created_at")
+// Logs de webhooks inbound com deduplicação por provider+event_id e TTL via expires_at
+model InboundWebhookLog {
+  id             String   @id @default(cuid())
+  provider       String
+  event_id       String
+  received_at    DateTime @default(now())
+  verified       Boolean
+  signature      String?
+  timestamp      String?
+  correlation_id String?
+  headers        Json
+  body           Json
+  expires_at     DateTime
 
-  @@map("time_punches")
+  @@unique([provider, event_id])
+  @@index([provider, received_at])
+  @@map("inbound_webhook_logs")
 }
 
-model Partner {
-  id         String   @id @db.Uuid
-  tenantId   String   @db.Uuid @map("tenant_id")
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
-  name       String?
-  slug       String?
-  type       String?
-  config     Json?
-  status     String?
-  createdAt  DateTime? @default(now()) @map("created_at")
+// Pilotos: persistência simples de estado para demonstração
+model PilotESignFlow {
+  id          String   @id
+  document_id String
+  status      String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  @@map("partners")
+  @@map("pilot_esign_flows")
+}
+
+model PilotPixCharge {
+  id         String   @id
+  amount     Float
+  currency   String   @default("BRL")
+  status     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("pilot_pix_charges")
+}
+
+model PilotConsentFlow {
+  id         String   @id
+  user_id    String
+  status     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("pilot_consent_flows")
+}
+
+// Relatórios de violações de CSP
+model CspReport {
+  id           String   @id @default(cuid())
+  created_at   DateTime @default(now())
+  url          String?
+  path         String?
+  directive    String?
+  blocked_uri  String?
+  referrer     String?
+  user_agent   String?
+  report_type  String?
+  client_ip    String?
+  body         Json?
+  expires_at   DateTime
+
+  @@index([created_at])
+  @@index([directive, created_at])
+  @@map("csp_reports")
 }

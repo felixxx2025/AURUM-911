@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { clsx } from 'clsx'
 import {
   HomeIcon,
   UsersIcon,
@@ -16,6 +12,10 @@ import {
   XMarkIcon,
   Bars3Icon
 } from '@heroicons/react/24/outline'
+import { clsx } from 'clsx'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -24,8 +24,11 @@ const navigation = [
   { name: 'Ponto', href: '/hr/time', icon: ClockIcon },
   { name: 'Recrutamento', href: '/hr/recruitment', icon: BriefcaseIcon },
   { name: 'Benefícios', href: '/hr/benefits', icon: HeartIcon },
+  { name: 'Módulos', href: '/modules', icon: ChartBarIcon },
+  { name: 'Marketplace', href: '/marketplace', icon: BriefcaseIcon },
+  { name: 'Integrações', href: '/integrations', icon: Cog6ToothIcon },
+  { name: 'Administração', href: '/admin', icon: Cog6ToothIcon },
   { name: 'Relatórios', href: '/hr/reports', icon: ChartBarIcon },
-  { name: 'Configurações', href: '/settings', icon: Cog6ToothIcon },
 ]
 
 interface SidebarProps {
