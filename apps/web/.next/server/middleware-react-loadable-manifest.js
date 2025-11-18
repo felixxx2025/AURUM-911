@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/partners/page.tsx -> ../../lib/api":{"id":4012,"files":[]},"lib/api.ts -> @/lib/log":{"id":7565,"files":["static/chunks/565.0b1a1d2dee444b4a.js"]}}';

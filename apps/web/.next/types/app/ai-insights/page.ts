@@ -1,4 +1,4 @@
-// File: /root/AURUM-911/apps/web/app/ai-insights/page.tsx
+// File: /home/runner/work/AURUM-911/AURUM-911/apps/web/app/ai-insights/page.tsx
 import * as entry from '../../../../app/ai-insights/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

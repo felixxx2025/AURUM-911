@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[565],{7565:function(n,e,t){t.d(e,{pushLog:function(){return s},y:function(){return c}});let u=[];function s(n,e,t){let s={t:Date.now(),level:n,msg:e,extra:t};u.push(s),u.length>200&&u.shift()}function c(){return u.slice().reverse()}}}]);
